@@ -4,30 +4,34 @@
   become: true
 
   vars:
-    ntp_servers:
-      - 0.pool.ntp.org
-      - 1.pool.ntp.org
+  ntp_servers:
+    - 0.pool.ntp.org
+    - 1.pool.ntp.org
 
   tasks:
 
-  # Detect which service should be used
+  # Detect chrony is supported
 
   - name: Set time service fact
     set_fact:
-      time_service: >-
-        {% if ansible_distribution == "Fedora" %}
-        chrony
+      chrony_supported: >-
+        {% if ansible_distribution == "Fedora" and ansible_distribution_major_version | int >= 16 %}
+        true
         {% elif ansible_os_family == "RedHat" and ansible_distribution_major_version | int >= 8 %}
-          chrony
+        true
         {% elif ansible_os_family == "Debian" and ansible_distribution_major_version | int >= 10 %}
-          chrony
+        true
         {% else %}
-          ntp
+        false
         {% endif %}
 
-  - name: Debug chosen service
-    debug:
-      msg: "System will use {{ time_service }}"
+  - name: Fail if ntp is not supported
+    fail:
+      msg: >
+        The 'chrony' service is not supported on
+        {{ ansible_distribution }} {{ ansible_distribution_version }}.
+        Please use ntp instead.
+    when: not chrony_supported | bool
 
   # Install required package
 
@@ -36,12 +40,6 @@
       name: chrony
       state: present
     when: time_service == "chrony"
-
-  - name: Install ntp
-    package:
-      name: ntp
-      state: present
-    when: time_service == "ntp"
 
   # Stop and disable conflicting service
 
@@ -53,14 +51,6 @@
     ignore_errors: true
     when: time_service == "chrony"
 
-  - name: Stop chrony if switching to ntp
-    systemd:
-      name: chronyd
-      state: stopped
-      enabled: false
-    ignore_errors: true
-    when: time_service == "ntp"
-
   # Configure chrony
 
   - name: Configure chrony servers
@@ -71,20 +61,6 @@
         {% for server in ntp_servers %}
         server {{ server }} iburst
         {% endfor %}
-    when: time_service == "chrony"
-    notify: restart time service
-
-  # Configure ntp
-
-  - name: Configure ntp servers
-    blockinfile:
-      path: /etc/ntp.conf
-      marker: "# {mark} ANSIBLE MANAGED BLOCK"
-      block: |
-        {% for server in ntp_servers %}
-        server {{ server }} iburst
-        {% endfor %}
-    when: time_service == "ntp"
     notify: restart time service
 
   # Enable and start correct service
@@ -95,13 +71,6 @@
       enabled: true
       state: started
     when: time_service == "chrony"
-
-  - name: Enable and start ntp
-    systemd:
-      name: ntpd
-      enabled: true
-      state: started
-    when: time_service == "ntp"
 
   # Verify synchronization
 
@@ -116,21 +85,10 @@
       var: chrony_status.stdout_lines
     when: time_service == "chrony"
 
-  - name: Check ntp peers
-    command: ntpq -p
-    register: ntp_status
-    changed_when: false
-    when: time_service == "ntp"
-
-  - name: Show ntp status
-    debug:
-      var: ntp_status.stdout_lines
-    when: time_service == "ntp"
-
   # Handlers
 
   handlers:
     - name: restart time service
       systemd:
-        name: "{{ 'chronyd' if time_service == 'chrony' else 'ntpd' }}"
+        name: chronyd
         state: restarted
