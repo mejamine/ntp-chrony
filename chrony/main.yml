@@ -70,7 +70,7 @@
 
   - name: Enable and start chrony
     systemd:
-      name: chronyd
+      name: "{{ 'chronyd' if ansible_os_family != 'Debian' else 'chrony' }}"
       enabled: true
       state: started
 
@@ -92,5 +92,5 @@
   handlers:
     - name: restart time service
       systemd:
-        name: chronyd
+        name: "{{ 'chronyd' if ansible_os_family != 'Debian' else 'chrony' }}"
         state: restarted

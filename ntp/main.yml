@@ -69,7 +69,7 @@
 
   - name: Enable and start ntp
     systemd:
-      name: ntpd
+      name: "{{ 'ntpd' if ansible_os_family != 'Debian' else 'ntp' }}"
       enabled: true
       state: started
 
@@ -89,5 +89,5 @@
   handlers:
     - name: restart time service
       systemd:
-        name: ntpd
+        name: "{{ 'ntpd' if ansible_os_family != 'Debian' else 'ntp' }}"
         state: restarted
