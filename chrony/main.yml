@@ -1,12 +1,12 @@
 ---
-- name: Configure Time Synchronization (Chrony or NTP)
+- name: Configure Time Synchronization (Chrony )
   hosts: all
   become: true
 
   vars:
-  ntp_servers:
-    - 0.pool.ntp.org
-    - 1.pool.ntp.org
+    ntp_servers:
+      - 0.pool.ntp.org
+      - 1.pool.ntp.org
 
   tasks:
 
