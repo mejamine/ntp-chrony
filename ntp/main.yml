@@ -43,12 +43,21 @@
       state: stopped
       enabled: false
     ignore_errors: true
+    when: ansible_os_family == "RedHat" or ansible_distribution == "Fedora"
+
+  - name: Stop chrony if switching to ntp
+    systemd:
+      name: chrony
+      state: stopped
+      enabled: false
+    ignore_errors: true
+    when: ansible_os_family == "Debian"
 
   # Configure ntp
 
   - name: Configure ntp servers
     blockinfile:
-      path: /etc/ntp.conf
+      path:  "{{ '/etc/ntp/ntp.conf' if ansible_os_family == 'Debian' else '/etc/ntp.conf' }}"
       marker: "# {mark} ANSIBLE MANAGED BLOCK"
       block: |
         {% for server in ntp_servers %}
