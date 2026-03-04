@@ -33,7 +33,7 @@
     package:
       name: ntp
       state: present
-    when: time_service == "ntp"
+
 
   # Stop and disable conflicting service
 

@@ -33,7 +33,7 @@
     package:
       name: chrony
       state: present
-    when: time_service == "chrony"
+
 
   # Stop and disable conflicting service
 
@@ -43,7 +43,7 @@
       state: stopped
       enabled: false
     ignore_errors: true
-    when: time_service == "chrony"
+
 
   # Configure chrony
 
@@ -64,7 +64,6 @@
       name: chronyd
       enabled: true
       state: started
-    when: time_service == "chrony"
 
   # Verify synchronization
 
@@ -72,12 +71,12 @@
     command: chronyc sources
     register: chrony_status
     changed_when: false
-    when: time_service == "chrony"
+
 
   - name: Show chrony status
     debug:
       var: chrony_status.stdout_lines
-    when: time_service == "chrony"
+
 
   # Handlers
 
