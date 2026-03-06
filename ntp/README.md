@@ -13,7 +13,6 @@ It ensures the legacy `ntp` package is installed, configured with custom NTP ser
 - Detect if legacy `ntp` is supported on the target OS  
 - Fail execution if `ntp` is not supported  
 - Install `ntp` package  
-- Stop and disable `chronyd` if present  
 - Configure NTP servers in `/etc/ntp.conf`  
 - Enable and start `ntpd` service  
 - Restart service when configuration changes  

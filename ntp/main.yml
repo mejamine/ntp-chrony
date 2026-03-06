@@ -34,25 +34,6 @@
       name: ntp
       state: present
 
-
-  # Stop and disable conflicting service
-
-  - name: Stop chrony if switching to ntp
-    systemd:
-      name: chronyd
-      state: stopped
-      enabled: false
-    ignore_errors: true
-    when: ansible_os_family == "RedHat" or ansible_distribution == "Fedora"
-
-  - name: Stop chrony if switching to ntp
-    systemd:
-      name: chrony
-      state: stopped
-      enabled: false
-    ignore_errors: true
-    when: ansible_os_family == "Debian"
-
   # Configure ntp
 
   - name: Configure ntp servers

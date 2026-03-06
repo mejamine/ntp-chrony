@@ -13,7 +13,6 @@ The playbook automatically checks if Chrony is supported on the target operating
 - Detect if Chrony is supported on the target OS  
 - Fail execution if Chrony is not supported  
 - Install `chrony` package  
-- Stop and disable legacy `ntpd` service if present  
 - Configure NTP servers in `/etc/chrony.conf`  
 - Enable and start `chronyd` service  
 - Restart service when configuration changes  
